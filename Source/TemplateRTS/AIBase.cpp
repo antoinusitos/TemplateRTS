@@ -2,7 +2,7 @@
 
 #include "TemplateRTS.h"
 #include "AIBase.h"
-
+#include "BaseAIController.h"
 
 // Sets default values
 AAIBase::AAIBase()
@@ -18,7 +18,8 @@ void AAIBase::BeginPlay()
 	Super::BeginPlay();
 
 	_selected = false;
-	
+	_theController = GetWorld()->SpawnActor<ABaseAIController>(controllerToSpawn, FVector::ZeroVector, FRotator::ZeroRotator);
+	_theController->Possess(this);
 }
 
 // Called every frame
@@ -38,5 +39,18 @@ void AAIBase::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 void AAIBase::SetSelected(bool newSelection)
 {
 	_selected = newSelection;
+}
+
+ABaseAIController* AAIBase::GetController()
+{
+	return _theController;
+}
+
+void AAIBase::MoveUnit(const FVector& location)
+{
+	if (_theController)
+	{
+		_theController->MoveToLocation(location, 0.5f);
+	}
 }
 

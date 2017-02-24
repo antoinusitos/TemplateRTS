@@ -5,6 +5,8 @@
 #include "GameFramework/Character.h"
 #include "AIBase.generated.h"
 
+class ABaseAIController;
+
 UCLASS()
 class TEMPLATERTS_API AAIBase : public ACharacter
 {
@@ -25,7 +27,16 @@ public:
 
 	void SetSelected(bool newSelection);
 
+	ABaseAIController* GetController();
+
+	void MoveUnit(const FVector& location);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TemplateRTS")
+	TSubclassOf<ABaseAIController> controllerToSpawn;
+
 private:
 	bool _selected;
+
+	ABaseAIController* _theController;
 	
 };

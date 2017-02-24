@@ -36,9 +36,13 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	UCameraComponent* _mainCamera;
 	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	float actionLength;
+
 private:
 
 	void ActionOne();
+	void FinishActionOne();
 
 	void ActionTwo();
 	
@@ -46,6 +50,10 @@ private:
 
 private:
 	
+	bool _selectionSuccess;
+
+	FVector _lastMousePos;
+
 	APlayerController* _playerController;
 
 	TArray<AAIBase*> _selection;

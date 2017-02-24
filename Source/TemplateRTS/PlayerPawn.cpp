@@ -18,6 +18,8 @@ APlayerPawn::APlayerPawn()
 
 	_mainCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Main Camera"));
 	_mainCamera->SetupAttachment(_springArm);
+
+	actionLength = 3000.0f;
 }
 
 // Called when the game starts or when spawned
@@ -41,6 +43,7 @@ void APlayerPawn::SetupPlayerInputComponent(class UInputComponent* InputComponen
 	Super::SetupPlayerInputComponent(InputComponent);
 
 	InputComponent->BindAction("ActionOne", IE_Pressed, this, &APlayerPawn::ActionOne);
+	InputComponent->BindAction("ActionOne", IE_Released, this, &APlayerPawn::FinishActionOne);
 	InputComponent->BindAction("ActionTwo", IE_Pressed, this, &APlayerPawn::ActionTwo);
 }
 
@@ -53,10 +56,10 @@ void APlayerPawn::ActionOne()
 		
 		_playerController->DeprojectMousePositionToWorld(location, direction);
 
-		//location the PC is focused on
 		const FVector Start = _mainCamera->GetComponentLocation();
-		//1000 units in facing direction of PC (distanceActions cm in front of the camera)
-		const FVector End = Start + (direction * 2000.0f);
+		const FVector End = Start + (direction * actionLength);
+
+		_playerController->GetMousePosition(_lastMousePos.X, _lastMousePos.y);
 
 		FHitResult HitInfo;
 		FCollisionQueryParams QParams;
@@ -73,21 +76,33 @@ void APlayerPawn::ActionOne()
 		1
 		);
 
+		_selectionSuccess = false;
+
 		if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
 		{
-			ClearSelectedUnit();
 			if (HitInfo.GetActor())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("hit action one !"));
 				auto ai = Cast<AAIBase>(HitInfo.GetActor());
 				if (ai)
 				{
+					_selectionSuccess = true;
+					ClearSelectedUnit();
 					_selection.Add(ai);
 					ai->SetSelected(true);
 				}
 			}
 		}
 	}
+}
+
+void APlayerPawn::FinishActionOne()
+{
+	if (!_selectionSuccess)
+	{
+		ClearSelectedUnit();
+
+	}
+
 }
 
 void APlayerPawn::ActionTwo()
@@ -99,10 +114,8 @@ void APlayerPawn::ActionTwo()
 
 		_playerController->DeprojectMousePositionToWorld(location, direction);
 
-		//location the PC is focused on
 		const FVector Start = _mainCamera->GetComponentLocation();
-		//1000 units in facing direction of PC (distanceActions cm in front of the camera)
-		const FVector End = Start + (direction * 2000.0f);
+		const FVector End = Start + (direction * actionLength);
 
 		FHitResult HitInfo;
 		FCollisionQueryParams QParams;
@@ -123,8 +136,13 @@ void APlayerPawn::ActionTwo()
 		{
 			if (HitInfo.GetActor())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("hit action two !"));
-				
+				if (_selection.Num() > 0)
+				{
+					for (auto i = 0; i < _selection.Num(); i++)
+					{
+						_selection[i]->MoveUnit(HitInfo.Location);
+					}
+				}
 			}
 		}
 	}
