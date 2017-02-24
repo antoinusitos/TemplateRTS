@@ -2,7 +2,7 @@
 
 #include "TemplateRTS.h"
 #include "PlayerPawn.h"
-
+#include "AIBase.h"
 
 // Sets default values
 APlayerPawn::APlayerPawn()
@@ -25,6 +25,7 @@ void APlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	_playerController = GetWorld()->GetFirstPlayerController();
 }
 
 // Called every frame
@@ -39,5 +40,102 @@ void APlayerPawn::SetupPlayerInputComponent(class UInputComponent* InputComponen
 {
 	Super::SetupPlayerInputComponent(InputComponent);
 
+	InputComponent->BindAction("ActionOne", IE_Pressed, this, &APlayerPawn::ActionOne);
+	InputComponent->BindAction("ActionTwo", IE_Pressed, this, &APlayerPawn::ActionTwo);
+}
+
+void APlayerPawn::ActionOne()
+{
+	if (_playerController)
+	{
+		FVector location;
+		FVector direction;
+		
+		_playerController->DeprojectMousePositionToWorld(location, direction);
+
+		//location the PC is focused on
+		const FVector Start = _mainCamera->GetComponentLocation();
+		//1000 units in facing direction of PC (distanceActions cm in front of the camera)
+		const FVector End = Start + (direction * 2000.0f);
+
+		FHitResult HitInfo;
+		FCollisionQueryParams QParams;
+		QParams.AddIgnoredActor(this);
+		ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
+		FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
+
+		DrawDebugLine(
+		GetWorld(),
+		Start,
+		End,
+		FColor(255, 0, 0),
+		true, -1, 0,
+		1
+		);
+
+		if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
+		{
+			ClearSelectedUnit();
+			if (HitInfo.GetActor())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("hit action one !"));
+				auto ai = Cast<AAIBase>(HitInfo.GetActor());
+				if (ai)
+				{
+					_selection.Add(ai);
+					ai->SetSelected(true);
+				}
+			}
+		}
+	}
+}
+
+void APlayerPawn::ActionTwo()
+{
+	if (_playerController)
+	{
+		FVector location;
+		FVector direction;
+
+		_playerController->DeprojectMousePositionToWorld(location, direction);
+
+		//location the PC is focused on
+		const FVector Start = _mainCamera->GetComponentLocation();
+		//1000 units in facing direction of PC (distanceActions cm in front of the camera)
+		const FVector End = Start + (direction * 2000.0f);
+
+		FHitResult HitInfo;
+		FCollisionQueryParams QParams;
+		QParams.AddIgnoredActor(this);
+		ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
+		FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
+
+		DrawDebugLine(
+			GetWorld(),
+			Start,
+			End,
+			FColor(255, 0, 0),
+			true, -1, 0,
+			1
+		);
+
+		if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
+		{
+			if (HitInfo.GetActor())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("hit action two !"));
+				
+			}
+		}
+	}
+}
+
+void APlayerPawn::ClearSelectedUnit()
+{
+	for (auto i = 0; i < _selection.Num(); i++)
+	{
+		_selection[i]->SetSelected(false);
+	}
+	_selection.Empty();
 }
 

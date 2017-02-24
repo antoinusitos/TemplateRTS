@@ -5,6 +5,8 @@
 #include "GameFramework/Pawn.h"
 #include "PlayerPawn.generated.h"
 
+class AAIBase;
+
 UCLASS()
 class TEMPLATERTS_API APlayerPawn : public APawn
 {
@@ -34,4 +36,18 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	UCameraComponent* _mainCamera;
 	
+private:
+
+	void ActionOne();
+
+	void ActionTwo();
+	
+	void ClearSelectedUnit();
+
+private:
+	
+	APlayerController* _playerController;
+
+	TArray<AAIBase*> _selection;
+
 };

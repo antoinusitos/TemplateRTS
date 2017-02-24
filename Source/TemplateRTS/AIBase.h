@@ -23,6 +23,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	
+	void SetSelected(bool newSelection);
+
+private:
+	bool _selected;
 	
 };

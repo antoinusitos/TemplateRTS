@@ -16,6 +16,8 @@ AAIBase::AAIBase()
 void AAIBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	_selected = false;
 	
 }
 
@@ -31,5 +33,10 @@ void AAIBase::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
 	Super::SetupPlayerInputComponent(InputComponent);
 
+}
+
+void AAIBase::SetSelected(bool newSelection)
+{
+	_selected = newSelection;
 }
 
