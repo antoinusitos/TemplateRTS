@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GameFramework/Character.h"
+#include "Data.h"
 #include "AIBase.generated.h"
 
 class ABaseAIController;
@@ -18,12 +19,6 @@ public:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
-	// Called every frame
-	virtual void Tick( float DeltaSeconds ) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
 	void SetSelected(bool newSelection);
 
@@ -37,14 +32,19 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "TemplateRTS")
 	void ToggleSelectionFeebackVisibility(bool mustBeActive);
 
+	int GetTeamNumber();
+
 protected:
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
 	UStaticMeshComponent* _selectionFeedback;
 
-private:
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "TemplateRTS")
+	EUnitTypeEnum _unitType;
+
 	bool _selected;
 
 	ABaseAIController* _theController;
-	
+
+	int _teamNumber;
 };

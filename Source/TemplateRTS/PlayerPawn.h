@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GameFramework/Pawn.h"
+#include "Data.h"
 #include "PlayerPawn.generated.h"
 
 class AAIBase;
@@ -25,6 +26,21 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	int GetGoldPossessed();
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	int GetWoodPossessed();
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	int GetFoodPossessed();
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	EAgesEnum GetCurrentAge();
+
+	void EarnGold(int Amount);
+	void EarnWood(int Amount);
+	void EarnFood(int Amount);
+
+	int GetTeamNumber();
+
 protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
@@ -38,6 +54,9 @@ protected:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	float actionLength;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "TemplateRTS")
+	void SetHUDByUnitType(EUnitTypeEnum type);
 
 private:
 
@@ -59,5 +78,13 @@ private:
 
 	TArray<AAIBase*> _selection;
 	UBoxComponent* _currentSelectionBox;
+
+	int _goldPossessed;
+	int _woodPossessed;
+	int _foodPossessed;
+
+	EAgesEnum _currentAge;
+
+	int _teamNumber;
 
 };

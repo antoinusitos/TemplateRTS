@@ -13,6 +13,8 @@ AAIBase::AAIBase()
 	_selectionFeedback = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Selection Feedback"));
 	_selectionFeedback->SetupAttachment(GetCapsuleComponent());
 
+	_unitType = EUnitTypeEnum::None;
+	_teamNumber = -1;
 }
 
 // Called when the game starts or when spawned
@@ -26,20 +28,6 @@ void AAIBase::BeginPlay()
 		_theController = GetWorld()->SpawnActor<ABaseAIController>(controllerToSpawn, FVector::ZeroVector, FRotator::ZeroRotator);
 		_theController->Possess(this);
 	}
-}
-
-// Called every frame
-void AAIBase::Tick( float DeltaTime )
-{
-	Super::Tick( DeltaTime );
-
-}
-
-// Called to bind functionality to input
-void AAIBase::SetupPlayerInputComponent(class UInputComponent* InputComponent)
-{
-	Super::SetupPlayerInputComponent(InputComponent);
-
 }
 
 void AAIBase::SetSelected(bool newSelection)
@@ -61,3 +49,7 @@ void AAIBase::MoveUnit(const FVector& location)
 	}
 }
 
+int AAIBase::GetTeamNumber()
+{
+	return _teamNumber;
+}

@@ -3,6 +3,7 @@
 #include "TemplateRTS.h"
 #include "PlayerPawn.h"
 #include "AIBase.h"
+#include "AIPeasant.h"
 
 // Sets default values
 APlayerPawn::APlayerPawn()
@@ -23,6 +24,8 @@ APlayerPawn::APlayerPawn()
 
 	actionLength = 3000.0f;
 	_executingActionOne = false;
+	_currentAge = EAgesEnum::None;
+	_teamNumber = 0;
 }
 
 // Called when the game starts or when spawned
@@ -31,6 +34,7 @@ void APlayerPawn::BeginPlay()
 	Super::BeginPlay();
 	
 	_playerController = GetWorld()->GetFirstPlayerController();
+	_currentAge = EAgesEnum::WoodAge;
 }
 
 // Called every frame
@@ -122,6 +126,11 @@ void APlayerPawn::ActionOne()
 					ClearSelectedUnit();
 					_selection.Add(ai);
 					ai->SetSelected(true);
+					auto aipeasant = Cast<AAIPeasant>(HitInfo.GetActor());
+					if (aipeasant)
+					{
+						SetHUDByUnitType(EUnitTypeEnum::Peasant);
+					}
 				}
 			}
 		}
@@ -130,6 +139,7 @@ void APlayerPawn::ActionOne()
 
 void APlayerPawn::FinishActionOne()
 {
+	//rescale the box to a positive scale to be able to overlap
 	FVector extend = _currentSelectionBox->GetUnscaledBoxExtent();
 
 	if (extend.X < 0)
@@ -149,11 +159,17 @@ void APlayerPawn::FinishActionOne()
 
 	for (auto i = 0; i < temp.Num(); i++)
 	{
-		auto aiBase = Cast<AAIBase>(temp[i]);
-		if (aiBase)
+		AAIPeasant* aiBase = Cast<AAIPeasant>(temp[i]);
+		if (aiBase && aiBase->GetTeamNumber() == _teamNumber)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Lol"));
 			_selection.Add(aiBase);
 			aiBase->SetSelected(true);
+		}
+		auto aipeasant = Cast<AAIPeasant>(temp[i]);
+		if (aipeasant)
+		{
+			SetHUDByUnitType(EUnitTypeEnum::Peasant);
 		}
 	}
 
@@ -221,4 +237,44 @@ void APlayerPawn::MakeSquareSelection(const FVector& currentPos)
 	_currentSelectionBox->SetHiddenInGame(false);
 	_currentSelectionBox->SetBoxExtent(FVector((currentPos.X - _lastMousePos.X) / 2, (currentPos.Y - _lastMousePos.Y)/2, 300.0f), true);
 
+}
+
+int APlayerPawn::GetGoldPossessed()
+{
+	return _goldPossessed;
+}
+
+int APlayerPawn::GetWoodPossessed()
+{
+	return _woodPossessed;
+}
+
+int APlayerPawn::GetFoodPossessed()
+{
+	return _foodPossessed;
+}
+
+EAgesEnum APlayerPawn::GetCurrentAge()
+{
+	return _currentAge;
+}
+
+void APlayerPawn::EarnGold(int Amount)
+{
+	_goldPossessed += Amount;
+}
+
+void APlayerPawn::EarnWood(int Amount)
+{
+	_woodPossessed += Amount;
+}
+
+void APlayerPawn::EarnFood(int Amount)
+{
+	_foodPossessed += Amount;
+}
+
+int APlayerPawn::GetTeamNumber()
+{
+	return _teamNumber;
 }
