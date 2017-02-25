@@ -130,6 +130,33 @@ void APlayerPawn::ActionOne()
 
 void APlayerPawn::FinishActionOne()
 {
+	FVector extend = _currentSelectionBox->GetUnscaledBoxExtent();
+
+	if (extend.X < 0)
+		_currentSelectionBox->SetBoxExtent(FVector(-extend.X, -extend.Y, extend.Z), true);
+
+	extend = _currentSelectionBox->GetUnscaledBoxExtent();
+
+	if (extend.Y < 0)
+		_currentSelectionBox->SetBoxExtent(FVector(extend.X, -extend.Y, extend.Z), true);
+
+	extend = _currentSelectionBox->GetUnscaledBoxExtent();
+
+	TArray<AActor*> temp;
+	_currentSelectionBox->GetOverlappingActors(temp, TSubclassOf<AActor>());
+
+	ClearSelectedUnit();
+
+	for (auto i = 0; i < temp.Num(); i++)
+	{
+		auto aiBase = Cast<AAIBase>(temp[i]);
+		if (aiBase)
+		{
+			_selection.Add(aiBase);
+			aiBase->SetSelected(true);
+		}
+	}
+
 	_currentSelectionBox->SetHiddenInGame(true);
 	_executingActionOne = false;
 }
@@ -188,25 +215,10 @@ void APlayerPawn::ClearSelectedUnit()
 
 void APlayerPawn::MakeSquareSelection(const FVector& currentPos)
 {
-
 	FVector midPoint((_lastMousePos.X + currentPos.X) / 2.0f, (_lastMousePos.Y + currentPos.Y) / 2.0f, 50.0f);
 
 	_currentSelectionBox->SetWorldLocation(midPoint);
 	_currentSelectionBox->SetHiddenInGame(false);
-	_currentSelectionBox->SetBoxExtent(FVector((currentPos.X - _lastMousePos.X) / 2, (currentPos.Y - _lastMousePos.Y)/2, 100.0f), true);
+	_currentSelectionBox->SetBoxExtent(FVector((currentPos.X - _lastMousePos.X) / 2, (currentPos.Y - _lastMousePos.Y)/2, 300.0f), true);
 
-	TArray<AActor*> temp;
-	_currentSelectionBox->GetOverlappingActors(temp, TSubclassOf<AAIBase>());
-
-	ClearSelectedUnit();
-
-	for (auto i = 0; i < temp.Num(); i++)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("lol"));
-		auto aiBase = Cast<AAIBase>(temp[i]);
-		if (aiBase)
-		{
-			_selection.Add(aiBase);
-		}
-	}
 }

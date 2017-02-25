@@ -10,6 +10,9 @@ AAIBase::AAIBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	_selectionFeedback = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Selection Feedback"));
+	_selectionFeedback->SetupAttachment(GetCapsuleComponent());
+
 }
 
 // Called when the game starts or when spawned
@@ -42,6 +45,7 @@ void AAIBase::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 void AAIBase::SetSelected(bool newSelection)
 {
 	_selected = newSelection;
+	ToggleSelectionFeebackVisibility(newSelection);
 }
 
 ABaseAIController* AAIBase::GetController()

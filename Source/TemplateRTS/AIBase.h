@@ -34,6 +34,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TemplateRTS")
 	TSubclassOf<ABaseAIController> controllerToSpawn;
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "TemplateRTS")
+	void ToggleSelectionFeebackVisibility(bool mustBeActive);
+
+protected:
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
+	UStaticMeshComponent* _selectionFeedback;
+
 private:
 	bool _selected;
 
