@@ -48,14 +48,16 @@ private:
 	
 	void ClearSelectedUnit();
 
+	void MakeSquareSelection(const FVector& currentPos);
+
 private:
-	
-	bool _selectionSuccess;
 
 	FVector _lastMousePos;
+	bool _executingActionOne;
 
 	APlayerController* _playerController;
 
 	TArray<AAIBase*> _selection;
+	UBoxComponent* _currentSelectionBox;
 
 };

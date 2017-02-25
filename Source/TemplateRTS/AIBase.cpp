@@ -18,8 +18,11 @@ void AAIBase::BeginPlay()
 	Super::BeginPlay();
 
 	_selected = false;
-	_theController = GetWorld()->SpawnActor<ABaseAIController>(controllerToSpawn, FVector::ZeroVector, FRotator::ZeroRotator);
-	_theController->Possess(this);
+	if (controllerToSpawn)
+	{
+		_theController = GetWorld()->SpawnActor<ABaseAIController>(controllerToSpawn, FVector::ZeroVector, FRotator::ZeroRotator);
+		_theController->Possess(this);
+	}
 }
 
 // Called every frame

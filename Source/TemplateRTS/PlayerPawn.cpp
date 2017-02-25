@@ -19,7 +19,10 @@ APlayerPawn::APlayerPawn()
 	_mainCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Main Camera"));
 	_mainCamera->SetupAttachment(_springArm);
 
+	_currentSelectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("box selection"));
+
 	actionLength = 3000.0f;
+	_executingActionOne = false;
 }
 
 // Called when the game starts or when spawned
@@ -35,6 +38,36 @@ void APlayerPawn::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+	if (_executingActionOne)
+	{
+		FVector location;
+		FVector direction;
+
+		_playerController->DeprojectMousePositionToWorld(location, direction);
+
+		const FVector Start = _mainCamera->GetComponentLocation();
+		const FVector End = Start + (direction * actionLength);
+
+		FHitResult HitInfo;
+		FCollisionQueryParams QParams;
+		QParams.AddIgnoredActor(this);
+		ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
+		FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
+
+		/*DrawDebugLine(
+			GetWorld(),
+			Start,
+			End,
+			FColor(255, 0, 0),
+			true, -1, 0,
+			1
+			);*/
+
+		if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
+		{
+			MakeSquareSelection(HitInfo.ImpactPoint);
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -59,7 +92,8 @@ void APlayerPawn::ActionOne()
 		const FVector Start = _mainCamera->GetComponentLocation();
 		const FVector End = Start + (direction * actionLength);
 
-		_playerController->GetMousePosition(_lastMousePos.X, _lastMousePos.y);
+		_executingActionOne = true;
+		_currentSelectionBox->SetHiddenInGame(false);
 
 		FHitResult HitInfo;
 		FCollisionQueryParams QParams;
@@ -67,25 +101,24 @@ void APlayerPawn::ActionOne()
 		ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
 		FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
 
-		DrawDebugLine(
+		/*DrawDebugLine(
 		GetWorld(),
 		Start,
 		End,
 		FColor(255, 0, 0),
 		true, -1, 0,
 		1
-		);
-
-		_selectionSuccess = false;
+		);*/
 
 		if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
 		{
 			if (HitInfo.GetActor())
 			{
+				_lastMousePos = HitInfo.ImpactPoint;
+
 				auto ai = Cast<AAIBase>(HitInfo.GetActor());
 				if (ai)
 				{
-					_selectionSuccess = true;
 					ClearSelectedUnit();
 					_selection.Add(ai);
 					ai->SetSelected(true);
@@ -97,12 +130,8 @@ void APlayerPawn::ActionOne()
 
 void APlayerPawn::FinishActionOne()
 {
-	if (!_selectionSuccess)
-	{
-		ClearSelectedUnit();
-
-	}
-
+	_currentSelectionBox->SetHiddenInGame(true);
+	_executingActionOne = false;
 }
 
 void APlayerPawn::ActionTwo()
@@ -123,14 +152,14 @@ void APlayerPawn::ActionTwo()
 		ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
 		FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
 
-		DrawDebugLine(
+		/*DrawDebugLine(
 			GetWorld(),
 			Start,
 			End,
 			FColor(255, 0, 0),
 			true, -1, 0,
 			1
-		);
+		);*/
 
 		if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
 		{
@@ -157,3 +186,27 @@ void APlayerPawn::ClearSelectedUnit()
 	_selection.Empty();
 }
 
+void APlayerPawn::MakeSquareSelection(const FVector& currentPos)
+{
+
+	FVector midPoint((_lastMousePos.X + currentPos.X) / 2.0f, (_lastMousePos.Y + currentPos.Y) / 2.0f, 50.0f);
+
+	_currentSelectionBox->SetWorldLocation(midPoint);
+	_currentSelectionBox->SetHiddenInGame(false);
+	_currentSelectionBox->SetBoxExtent(FVector((currentPos.X - _lastMousePos.X) / 2, (currentPos.Y - _lastMousePos.Y)/2, 100.0f), true);
+
+	TArray<AActor*> temp;
+	_currentSelectionBox->GetOverlappingActors(temp, TSubclassOf<AAIBase>());
+
+	ClearSelectedUnit();
+
+	for (auto i = 0; i < temp.Num(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("lol"));
+		auto aiBase = Cast<AAIBase>(temp[i]);
+		if (aiBase)
+		{
+			_selection.Add(aiBase);
+		}
+	}
+}
