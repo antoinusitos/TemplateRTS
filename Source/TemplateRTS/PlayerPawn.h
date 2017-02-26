@@ -7,6 +7,7 @@
 #include "PlayerPawn.generated.h"
 
 class AAIBase;
+class ABuilding;
 
 UCLASS()
 class TEMPLATERTS_API APlayerPawn : public APawn
@@ -28,16 +29,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	int GetGoldPossessed();
-	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
-	int GetWoodPossessed();
-	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
-	int GetFoodPossessed();
+
 	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	EAgesEnum GetCurrentAge();
 
 	void EarnGold(int Amount);
-	void EarnWood(int Amount);
-	void EarnFood(int Amount);
 
 	int GetTeamNumber();
 
@@ -57,6 +53,12 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "TemplateRTS")
 	void SetHUDByUnitType(EUnitTypeEnum type);
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	EPlayerStateEnum _playerState;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	ABuilding* _placingBuilding;
 
 private:
 
@@ -80,8 +82,6 @@ private:
 	UBoxComponent* _currentSelectionBox;
 
 	int _goldPossessed;
-	int _woodPossessed;
-	int _foodPossessed;
 
 	EAgesEnum _currentAge;
 

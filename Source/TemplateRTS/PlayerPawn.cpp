@@ -4,6 +4,7 @@
 #include "PlayerPawn.h"
 #include "AIBase.h"
 #include "AIPeasant.h"
+#include "Building.h"
 
 // Sets default values
 APlayerPawn::APlayerPawn()
@@ -26,6 +27,9 @@ APlayerPawn::APlayerPawn()
 	_executingActionOne = false;
 	_currentAge = EAgesEnum::None;
 	_teamNumber = 0;
+	_playerState = EPlayerStateEnum::Moving;
+
+	_goldPossessed = 1000;
 }
 
 // Called when the game starts or when spawned
@@ -42,23 +46,59 @@ void APlayerPawn::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-	if (_executingActionOne)
+	if (_playerState == EPlayerStateEnum::Moving)
 	{
-		FVector location;
-		FVector direction;
 
-		_playerController->DeprojectMousePositionToWorld(location, direction);
+		if (_executingActionOne)
+		{
+			FVector location;
+			FVector direction;
 
-		const FVector Start = _mainCamera->GetComponentLocation();
-		const FVector End = Start + (direction * actionLength);
+			_playerController->DeprojectMousePositionToWorld(location, direction);
 
-		FHitResult HitInfo;
-		FCollisionQueryParams QParams;
-		QParams.AddIgnoredActor(this);
-		ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
-		FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
+			const FVector Start = _mainCamera->GetComponentLocation();
+			const FVector End = Start + (direction * actionLength);
 
-		/*DrawDebugLine(
+			FHitResult HitInfo;
+			FCollisionQueryParams QParams;
+			QParams.AddIgnoredActor(this);
+			ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
+			FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
+
+			/*DrawDebugLine(
+				GetWorld(),
+				Start,
+				End,
+				FColor(255, 0, 0),
+				true, -1, 0,
+				1
+				);*/
+
+			if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
+			{
+				MakeSquareSelection(HitInfo.ImpactPoint);
+			}
+		}
+	}
+	else if (_playerState == EPlayerStateEnum::Placing)
+	{
+		if (_placingBuilding)
+		{
+			FVector location;
+			FVector direction;
+
+			_playerController->DeprojectMousePositionToWorld(location, direction);
+
+			const FVector Start = _mainCamera->GetComponentLocation();
+			const FVector End = Start + (direction * actionLength);
+
+			FHitResult HitInfo;
+			FCollisionQueryParams QParams;
+			QParams.AddIgnoredActor(this);
+			ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
+			FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
+
+			/*DrawDebugLine(
 			GetWorld(),
 			Start,
 			End,
@@ -67,9 +107,10 @@ void APlayerPawn::Tick( float DeltaTime )
 			1
 			);*/
 
-		if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
-		{
-			MakeSquareSelection(HitInfo.ImpactPoint);
+			if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
+			{
+				_placingBuilding->SetActorLocation(HitInfo.ImpactPoint);
+			}
 		}
 	}
 }
@@ -88,51 +129,69 @@ void APlayerPawn::ActionOne()
 {
 	if (_playerController)
 	{
-		FVector location;
-		FVector direction;
-		
-		_playerController->DeprojectMousePositionToWorld(location, direction);
-
-		const FVector Start = _mainCamera->GetComponentLocation();
-		const FVector End = Start + (direction * actionLength);
-
-		_executingActionOne = true;
-		_currentSelectionBox->SetHiddenInGame(false);
-
-		FHitResult HitInfo;
-		FCollisionQueryParams QParams;
-		QParams.AddIgnoredActor(this);
-		ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
-		FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
-
-		/*DrawDebugLine(
-		GetWorld(),
-		Start,
-		End,
-		FColor(255, 0, 0),
-		true, -1, 0,
-		1
-		);*/
-
-		if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
+		if (_playerState == EPlayerStateEnum::Moving)
 		{
-			if (HitInfo.GetActor())
-			{
-				_lastMousePos = HitInfo.ImpactPoint;
 
-				auto ai = Cast<AAIBase>(HitInfo.GetActor());
-				if (ai)
+			FVector location;
+			FVector direction;
+
+			_playerController->DeprojectMousePositionToWorld(location, direction);
+
+			const FVector Start = _mainCamera->GetComponentLocation();
+			const FVector End = Start + (direction * actionLength);
+
+			_executingActionOne = true;
+			_currentSelectionBox->SetHiddenInGame(false);
+
+			FHitResult HitInfo;
+			FCollisionQueryParams QParams;
+			QParams.AddIgnoredActor(this);
+			ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
+			FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
+
+			/*DrawDebugLine(
+			GetWorld(),
+			Start,
+			End,
+			FColor(255, 0, 0),
+			true, -1, 0,
+			1
+			);*/
+
+			if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
+			{
+				if (HitInfo.GetActor())
 				{
-					ClearSelectedUnit();
-					_selection.Add(ai);
-					ai->SetSelected(true);
-					auto aipeasant = Cast<AAIPeasant>(HitInfo.GetActor());
-					if (aipeasant)
+					_lastMousePos = HitInfo.ImpactPoint;
+
+					auto ai = Cast<AAIBase>(HitInfo.GetActor());
+					if (ai)
 					{
-						SetHUDByUnitType(EUnitTypeEnum::Peasant);
+						ClearSelectedUnit();
+						_selection.Add(ai);
+						ai->SetSelected(true);
+						auto aipeasant = Cast<AAIPeasant>(HitInfo.GetActor());
+						if (aipeasant)
+						{
+							SetHUDByUnitType(EUnitTypeEnum::Peasant);
+						}
 					}
 				}
 			}
+		}
+		else if (_playerState == EPlayerStateEnum::Placing)
+		{
+			if (_goldPossessed >= _placingBuilding->GetCost())
+			{
+				_placingBuilding->SetBuildingMaterial();
+				_goldPossessed -= _placingBuilding->GetCost();
+			}
+			else
+			{
+				_placingBuilding->Destroy();
+			}
+			_placingBuilding = nullptr;
+			_playerState = EPlayerStateEnum::Moving;
 		}
 	}
 }
@@ -159,14 +218,21 @@ void APlayerPawn::FinishActionOne()
 
 	for (auto i = 0; i < temp.Num(); i++)
 	{
-		AAIPeasant* aiBase = Cast<AAIPeasant>(temp[i]);
+		AAIBase* aiBase = Cast<AAIBase>(temp[i]);
 		if (aiBase && aiBase->GetTeamNumber() == _teamNumber)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Lol"));
 			_selection.Add(aiBase);
 			aiBase->SetSelected(true);
 		}
-		auto aipeasant = Cast<AAIPeasant>(temp[i]);
+	}
+	
+	if (_selection.Num() == 0)
+	{
+		SetHUDByUnitType(EUnitTypeEnum::None);
+	}
+	else
+	{
+		auto aipeasant = Cast<AAIPeasant>(temp[0]);
 		if (aipeasant)
 		{
 			SetHUDByUnitType(EUnitTypeEnum::Peasant);
@@ -181,41 +247,50 @@ void APlayerPawn::ActionTwo()
 {
 	if (_playerController)
 	{
-		FVector location;
-		FVector direction;
-
-		_playerController->DeprojectMousePositionToWorld(location, direction);
-
-		const FVector Start = _mainCamera->GetComponentLocation();
-		const FVector End = Start + (direction * actionLength);
-
-		FHitResult HitInfo;
-		FCollisionQueryParams QParams;
-		QParams.AddIgnoredActor(this);
-		ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
-		FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
-
-		/*DrawDebugLine(
-			GetWorld(),
-			Start,
-			End,
-			FColor(255, 0, 0),
-			true, -1, 0,
-			1
-		);*/
-
-		if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
+		if (_playerState == EPlayerStateEnum::Moving)
 		{
-			if (HitInfo.GetActor())
+			FVector location;
+			FVector direction;
+
+			_playerController->DeprojectMousePositionToWorld(location, direction);
+
+			const FVector Start = _mainCamera->GetComponentLocation();
+			const FVector End = Start + (direction * actionLength);
+
+			FHitResult HitInfo;
+			FCollisionQueryParams QParams;
+			QParams.AddIgnoredActor(this);
+			ECollisionChannel Channel = ECollisionChannel::ECC_Visibility;
+			FCollisionQueryParams OParams = FCollisionQueryParams::DefaultQueryParam;
+
+			/*DrawDebugLine(
+				GetWorld(),
+				Start,
+				End,
+				FColor(255, 0, 0),
+				true, -1, 0,
+				1
+			);*/
+
+			if (GetWorld() && GetWorld()->LineTraceSingleByChannel(HitInfo, Start, End, Channel, QParams))
 			{
-				if (_selection.Num() > 0)
+				if (HitInfo.GetActor())
 				{
-					for (auto i = 0; i < _selection.Num(); i++)
+					if (_selection.Num() > 0)
 					{
-						_selection[i]->MoveUnit(HitInfo.Location);
+						for (auto i = 0; i < _selection.Num(); i++)
+						{
+							_selection[i]->MoveUnit(HitInfo.Location);
+						}
 					}
 				}
 			}
+		}
+		else if (_playerState == EPlayerStateEnum::Placing)
+		{
+			_placingBuilding->Destroy();
+			_placingBuilding = nullptr;
+			_playerState = EPlayerStateEnum::Moving;
 		}
 	}
 }
@@ -244,16 +319,6 @@ int APlayerPawn::GetGoldPossessed()
 	return _goldPossessed;
 }
 
-int APlayerPawn::GetWoodPossessed()
-{
-	return _woodPossessed;
-}
-
-int APlayerPawn::GetFoodPossessed()
-{
-	return _foodPossessed;
-}
-
 EAgesEnum APlayerPawn::GetCurrentAge()
 {
 	return _currentAge;
@@ -262,16 +327,6 @@ EAgesEnum APlayerPawn::GetCurrentAge()
 void APlayerPawn::EarnGold(int Amount)
 {
 	_goldPossessed += Amount;
-}
-
-void APlayerPawn::EarnWood(int Amount)
-{
-	_woodPossessed += Amount;
-}
-
-void APlayerPawn::EarnFood(int Amount)
-{
-	_foodPossessed += Amount;
 }
 
 int APlayerPawn::GetTeamNumber()

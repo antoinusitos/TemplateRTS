@@ -34,6 +34,9 @@ public:
 
 	int GetTeamNumber();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TemplateRTS")
+	int _teamNumber;
+
 protected:
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
@@ -45,6 +48,4 @@ protected:
 	bool _selected;
 
 	ABaseAIController* _theController;
-
-	int _teamNumber;
 };
