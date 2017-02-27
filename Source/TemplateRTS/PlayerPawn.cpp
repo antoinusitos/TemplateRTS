@@ -25,6 +25,7 @@ APlayerPawn::APlayerPawn()
 
 	actionLength = 3000.0f;
 	_executingActionOne = false;
+	_hasHittedSomething = false;
 	_currentAge = EAgesEnum::None;
 	_teamNumber = 0;
 	_playerState = EPlayerStateEnum::Moving;
@@ -131,7 +132,7 @@ void APlayerPawn::ActionOne()
 	{
 		if (_playerState == EPlayerStateEnum::Moving)
 		{
-
+			_hasHittedSomething = false;
 			FVector location;
 			FVector direction;
 
@@ -170,11 +171,19 @@ void APlayerPawn::ActionOne()
 						ClearSelectedUnit();
 						_selection.Add(ai);
 						ai->SetSelected(true);
-						auto aipeasant = Cast<AAIPeasant>(HitInfo.GetActor());
-						if (aipeasant)
-						{
-							SetHUDByUnitType(EUnitTypeEnum::Peasant);
-						}
+						SetHUDByUnitType(ai->GetUnitType());
+						_hasHittedSomething = true;
+					}
+
+					auto building = Cast<ABuilding>(HitInfo.GetActor());
+					if (building)
+					{
+						ClearSelectedUnit();
+						if (building->GetBuildingState() == EBuildingStateEnum::Placed)
+							SetHUDByBuildingType(building, building->GetBuildingType());
+						else
+							SetHUDByBuildingType(nullptr, EBuildingEnum::None);
+						_hasHittedSomething = true;
 					}
 				}
 			}
@@ -198,44 +207,47 @@ void APlayerPawn::ActionOne()
 
 void APlayerPawn::FinishActionOne()
 {
-	//rescale the box to a positive scale to be able to overlap
-	FVector extend = _currentSelectionBox->GetUnscaledBoxExtent();
-
-	if (extend.X < 0)
-		_currentSelectionBox->SetBoxExtent(FVector(-extend.X, -extend.Y, extend.Z), true);
-
-	extend = _currentSelectionBox->GetUnscaledBoxExtent();
-
-	if (extend.Y < 0)
-		_currentSelectionBox->SetBoxExtent(FVector(extend.X, -extend.Y, extend.Z), true);
-
-	extend = _currentSelectionBox->GetUnscaledBoxExtent();
-
-	TArray<AActor*> temp;
-	_currentSelectionBox->GetOverlappingActors(temp, TSubclassOf<AActor>());
-
-	ClearSelectedUnit();
-
-	for (auto i = 0; i < temp.Num(); i++)
+	if (!_hasHittedSomething)
 	{
-		AAIBase* aiBase = Cast<AAIBase>(temp[i]);
-		if (aiBase && aiBase->GetTeamNumber() == _teamNumber)
+		//rescale the box to a positive scale to be able to overlap
+		FVector extend = _currentSelectionBox->GetUnscaledBoxExtent();
+
+		if (extend.X < 0)
+			_currentSelectionBox->SetBoxExtent(FVector(-extend.X, -extend.Y, extend.Z), true);
+
+		extend = _currentSelectionBox->GetUnscaledBoxExtent();
+
+		if (extend.Y < 0)
+			_currentSelectionBox->SetBoxExtent(FVector(extend.X, -extend.Y, extend.Z), true);
+
+		extend = _currentSelectionBox->GetUnscaledBoxExtent();
+
+		TArray<AActor*> temp;
+		_currentSelectionBox->GetOverlappingActors(temp, TSubclassOf<AActor>());
+
+		ClearSelectedUnit();
+
+		for (auto i = 0; i < temp.Num(); i++)
 		{
-			_selection.Add(aiBase);
-			aiBase->SetSelected(true);
+			AAIBase* aiBase = Cast<AAIBase>(temp[i]);
+			if (aiBase && aiBase->GetTeamNumber() == _teamNumber)
+			{
+				_selection.Add(aiBase);
+				aiBase->SetSelected(true);
+			}
 		}
-	}
-	
-	if (_selection.Num() == 0)
-	{
-		SetHUDByUnitType(EUnitTypeEnum::None);
-	}
-	else
-	{
-		auto aipeasant = Cast<AAIPeasant>(temp[0]);
-		if (aipeasant)
+
+		if (_selection.Num() == 0)
 		{
-			SetHUDByUnitType(EUnitTypeEnum::Peasant);
+			SetHUDByUnitType(EUnitTypeEnum::None);
+		}
+		else
+		{
+			auto aipeasant = Cast<AAIPeasant>(temp[0]);
+			if (aipeasant)
+			{
+				SetHUDByUnitType(EUnitTypeEnum::Peasant);
+			}
 		}
 	}
 

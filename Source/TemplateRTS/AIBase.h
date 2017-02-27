@@ -32,12 +32,24 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "TemplateRTS")
 	void ToggleSelectionFeebackVisibility(bool mustBeActive);
 
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	int GetTeamNumber();
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	void SetTeamNumber(int newTeam);
+
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	EUnitTypeEnum GetUnitType();
+
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	int GetCost();
+
+protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TemplateRTS")
 	int _teamNumber;
 
-protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TemplateRTS")
+	int _cost;
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
 	UStaticMeshComponent* _selectionFeedback;
@@ -48,4 +60,8 @@ protected:
 	bool _selected;
 
 	ABaseAIController* _theController;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	float _timeToConstruct;
+	float _currentTimeToConstruct;
 };

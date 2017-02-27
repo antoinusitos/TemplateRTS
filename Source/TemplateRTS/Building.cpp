@@ -16,10 +16,15 @@ ABuilding::ABuilding()
 	_staticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	_staticMesh->SetupAttachment(_sceneComponent);
 
+	_arrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("Arrow Component"));
+	_arrowComponent->SetupAttachment(_sceneComponent);
+
 	_cost = 100;
 	_buildingState = EBuildingStateEnum::None;
+	_buildingType = EBuildingEnum::None;
 	_timeToConstruct = 5.0f;
 	_currentTimeToConstruct = 0.0f;
+	_canSpawn = true;
 
 	_staticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
@@ -34,6 +39,36 @@ void ABuilding::Tick(float DeltaSeconds)
 			SetPlacedMaterial();
 		}
 	}
+}
+
+EBuildingEnum ABuilding::GetBuildingType()
+{
+	return _buildingType;
+}
+
+EBuildingStateEnum ABuilding::GetBuildingState()
+{
+	return _buildingState;
+}
+
+FVector ABuilding::GetSpawnPos()
+{
+	return _arrowComponent->GetComponentLocation();
+}
+
+FRotator ABuilding::GetSpawnRot()
+{
+	return _arrowComponent->GetComponentRotation();
+}
+
+int ABuilding::GetTeamNumber()
+{
+	return _teamNumber;
+}
+
+void ABuilding::AddUnitToSpawn(EUnitTypeEnum newUnitToSpawn)
+{
+	_unitsToSpawn.Add(newUnitToSpawn);
 }
 
 void ABuilding::SetPlayerOwner(APlayerPawn* APlayerOwner)

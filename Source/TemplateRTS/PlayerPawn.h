@@ -51,8 +51,11 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	float actionLength;
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "TemplateRTS")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "TemplateRTS")
 	void SetHUDByUnitType(EUnitTypeEnum type);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "TemplateRTS")
+	void SetHUDByBuildingType(ABuilding* theBuilding, EBuildingEnum type);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	EPlayerStateEnum _playerState;
@@ -75,6 +78,7 @@ private:
 
 	FVector _lastMousePos;
 	bool _executingActionOne;
+	bool _hasHittedSomething;
 
 	APlayerController* _playerController;
 

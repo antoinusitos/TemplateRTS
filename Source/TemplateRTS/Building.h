@@ -24,9 +24,30 @@ public:
 
 	void SetPlacedMaterial();
 
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	int GetCost();
 
 	virtual void Tick(float DeltaSeconds) override;
+
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	EBuildingEnum GetBuildingType();
+
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	EBuildingStateEnum GetBuildingState();
+
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	FVector GetSpawnPos();
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	FRotator GetSpawnRot();
+
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	int GetTeamNumber();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "TemplateRTS")
+	void SpawnPendingUnits();
+
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	void AddUnitToSpawn(EUnitTypeEnum newUnitToSpawn);
 
 protected:
 
@@ -35,6 +56,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
 	UStaticMeshComponent* _staticMesh;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
+	UArrowComponent* _arrowComponent;
 
 	APlayerPawn* _playerOwner;
 
@@ -55,4 +79,14 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	EBuildingStateEnum _buildingState;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	EBuildingEnum _buildingType;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	TArray<EUnitTypeEnum> _unitsToSpawn;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	bool _canSpawn;
+
 };

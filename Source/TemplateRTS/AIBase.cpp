@@ -15,6 +15,9 @@ AAIBase::AAIBase()
 
 	_unitType = EUnitTypeEnum::None;
 	_teamNumber = -1;
+	_cost = 50;
+	_currentTimeToConstruct = 0.0f;
+	_timeToConstruct = 2.0f;
 }
 
 // Called when the game starts or when spawned
@@ -52,4 +55,19 @@ void AAIBase::MoveUnit(const FVector& location)
 int AAIBase::GetTeamNumber()
 {
 	return _teamNumber;
+}
+
+void AAIBase::SetTeamNumber(int newTeam)
+{
+	_teamNumber = newTeam;
+}
+
+EUnitTypeEnum AAIBase::GetUnitType()
+{
+	return _unitType;
+}
+
+int AAIBase::GetCost()
+{
+	return _cost;
 }
