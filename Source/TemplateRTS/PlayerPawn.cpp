@@ -190,10 +190,18 @@ void APlayerPawn::ActionOne()
 		}
 		else if (_playerState == EPlayerStateEnum::Placing)
 		{
+			_hasHittedSomething = true;
 			if (_goldPossessed >= _placingBuilding->GetCost())
 			{
-				_placingBuilding->SetBuildingMaterial();
+				_placingBuilding->SetWaitingMaterial();
 				_goldPossessed -= _placingBuilding->GetCost();
+				_selection[0]->MoveUnit(_placingBuilding->GetActorLocation());
+				_selection.RemoveAt(0);
+
+				if (_selection.Num() == 0)
+				{
+					SetHUDByUnitType(EUnitTypeEnum::None);
+				}
 			}
 			else
 			{
@@ -230,7 +238,7 @@ void APlayerPawn::FinishActionOne()
 		for (auto i = 0; i < temp.Num(); i++)
 		{
 			AAIBase* aiBase = Cast<AAIBase>(temp[i]);
-			if (aiBase && aiBase->GetTeamNumber() == _teamNumber)
+			if (aiBase && aiBase->GetTeamNumber() == _teamNumber && aiBase->GetCanMove())
 			{
 				_selection.Add(aiBase);
 				aiBase->SetSelected(true);

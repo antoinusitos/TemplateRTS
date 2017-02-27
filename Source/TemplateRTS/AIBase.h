@@ -7,6 +7,7 @@
 #include "AIBase.generated.h"
 
 class ABaseAIController;
+class ABuilding;
 
 UCLASS()
 class TEMPLATERTS_API AAIBase : public ACharacter
@@ -43,6 +44,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	int GetCost();
 
+	void HideInBuilding(ABuilding* theBuilding);
+	void OutOfBuilding();
+
+	bool GetCanMove();
+
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TemplateRTS")
@@ -62,6 +68,11 @@ protected:
 	ABaseAIController* _theController;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	UTexture2D* _unitImage;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	float _timeToConstruct;
 	float _currentTimeToConstruct;
+
+	bool _canMove;
 };

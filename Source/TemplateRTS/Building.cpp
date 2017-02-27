@@ -3,6 +3,7 @@
 #include "TemplateRTS.h"
 #include "Building.h"
 #include "PlayerPawn.h"
+#include "AIPeasant.h"
 
 // Sets default values
 ABuilding::ABuilding()
@@ -18,6 +19,11 @@ ABuilding::ABuilding()
 
 	_arrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("Arrow Component"));
 	_arrowComponent->SetupAttachment(_sceneComponent);
+
+	_detectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Detection Sphere"));
+	_detectionSphere->SetupAttachment(_sceneComponent);
+
+	_detectionSphere->OnComponentBeginOverlap.AddDynamic(this, &ABuilding::OnBeginOverlap);
 
 	_cost = 100;
 	_buildingState = EBuildingStateEnum::None;
@@ -37,6 +43,10 @@ void ABuilding::Tick(float DeltaSeconds)
 		if (_currentTimeToConstruct >= _timeToConstruct)
 		{
 			SetPlacedMaterial();
+			if (_constructor)
+			{
+				_constructor->OutOfBuilding();
+			}
 		}
 	}
 }
@@ -71,10 +81,22 @@ void ABuilding::AddUnitToSpawn(EUnitTypeEnum newUnitToSpawn)
 	_unitsToSpawn.Add(newUnitToSpawn);
 }
 
+void ABuilding::SetPeasantConstructor(AAIPeasant* theConstructor)
+{
+	_constructor = theConstructor;
+}
+
 void ABuilding::SetPlayerOwner(APlayerPawn* APlayerOwner)
 {
 	_playerOwner = APlayerOwner;
 	_teamNumber = APlayerOwner->GetTeamNumber();
+}
+
+void ABuilding::SetWaitingMaterial()
+{
+	_staticMesh->SetMaterial(0, _waitingMaterial);
+	_staticMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	_buildingState = EBuildingStateEnum::Waiting;
 }
 
 int ABuilding::GetCost()
@@ -93,4 +115,18 @@ void ABuilding::SetPlacedMaterial()
 {
 	_staticMesh->SetMaterial(0, _baseMaterial);
 	_buildingState = EBuildingStateEnum::Placed;
+}
+
+void ABuilding::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (_buildingState == EBuildingStateEnum::Waiting)
+	{
+		_constructor = Cast<AAIPeasant>(OtherActor);
+		if (_constructor)
+		{
+			_constructor->MoveUnit(_constructor->GetActorLocation());
+			_constructor->HideInBuilding(this);
+			SetBuildingMaterial();
+		}
+	}
 }

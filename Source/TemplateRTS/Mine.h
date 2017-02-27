@@ -19,12 +19,14 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
-private:
+protected:
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	float _timeToEarn;
-	float _currentTimeToEarn;
-
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	int _amountEarn;
 
-	
+private:
+
+	float _currentTimeToEarn;
 };

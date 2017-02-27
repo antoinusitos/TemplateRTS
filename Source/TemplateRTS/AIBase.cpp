@@ -3,6 +3,7 @@
 #include "TemplateRTS.h"
 #include "AIBase.h"
 #include "BaseAIController.h"
+#include "Building.h"
 
 // Sets default values
 AAIBase::AAIBase()
@@ -18,6 +19,7 @@ AAIBase::AAIBase()
 	_cost = 50;
 	_currentTimeToConstruct = 0.0f;
 	_timeToConstruct = 2.0f;
+	_canMove = true;
 }
 
 // Called when the game starts or when spawned
@@ -70,4 +72,22 @@ EUnitTypeEnum AAIBase::GetUnitType()
 int AAIBase::GetCost()
 {
 	return _cost;
+}
+
+void AAIBase::HideInBuilding(ABuilding* theBuilding)
+{
+	SetActorHiddenInGame(true);
+	_canMove = false;
+	SetSelected(false);
+}
+
+void AAIBase::OutOfBuilding()
+{
+	SetActorHiddenInGame(false);
+	_canMove = true;
+}
+
+bool AAIBase::GetCanMove()
+{
+	return _canMove;
 }

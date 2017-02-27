@@ -33,6 +33,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	EAgesEnum GetCurrentAge();
 
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	void EarnGold(int Amount);
 
 	int GetTeamNumber();
@@ -63,6 +64,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	ABuilding* _placingBuilding;
 
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "TemplateRTS")
+	int _goldPossessed;
+
 private:
 
 	void ActionOne();
@@ -84,8 +88,6 @@ private:
 
 	TArray<AAIBase*> _selection;
 	UBoxComponent* _currentSelectionBox;
-
-	int _goldPossessed;
 
 	EAgesEnum _currentAge;
 

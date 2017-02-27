@@ -43,6 +43,7 @@ UENUM(BlueprintType)
 enum class EBuildingStateEnum : uint8
 {
 	None 		UMETA(DisplayName = "None"),
+	Waiting 	UMETA(DisplayName = "Waiting"),
 	Building	UMETA(DisplayName = "Building"),
 	Placed	 	UMETA(DisplayName = "Placed"),
 };

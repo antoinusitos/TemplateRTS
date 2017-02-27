@@ -7,6 +7,7 @@
 #include "Building.generated.h"
 
 class APlayerPawn;
+class AAIPeasant;
 
 UCLASS()
 class TEMPLATERTS_API ABuilding : public AActor
@@ -19,6 +20,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	void SetPlayerOwner(APlayerPawn* APlayerOwner);
+
+	void SetWaitingMaterial();
 
 	void SetBuildingMaterial();
 
@@ -49,6 +52,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	void AddUnitToSpawn(EUnitTypeEnum newUnitToSpawn);
 
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
+	void SetPeasantConstructor(AAIPeasant* theConstructor);
+
 protected:
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
@@ -60,9 +66,15 @@ protected:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
 	UArrowComponent* _arrowComponent;
 
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
+	USphereComponent* _detectionSphere;
+
 	APlayerPawn* _playerOwner;
 
 	int _teamNumber;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	UMaterial* _waitingMaterial;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	UMaterial* _buildingMaterial;
@@ -88,5 +100,13 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	bool _canSpawn;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	AAIPeasant* _constructor;
+
+private:
+
+	UFUNCTION()
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 };
