@@ -20,6 +20,9 @@ ABuilding::ABuilding()
 	_arrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("Arrow Component"));
 	_arrowComponent->SetupAttachment(_sceneComponent);
 
+	_rallyPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("RallyPoint"));
+	_rallyPoint->SetupAttachment(_sceneComponent);
+
 	_detectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Detection Sphere"));
 	_detectionSphere->SetupAttachment(_sceneComponent);
 
@@ -31,6 +34,7 @@ ABuilding::ABuilding()
 	_timeToConstruct = 5.0f;
 	_currentTimeToConstruct = 0.0f;
 	_canSpawn = true;
+	_isSelected = false;
 
 	_staticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
@@ -84,6 +88,24 @@ void ABuilding::AddUnitToSpawn(EUnitTypeEnum newUnitToSpawn)
 void ABuilding::SetPeasantConstructor(AAIPeasant* theConstructor)
 {
 	_constructor = theConstructor;
+}
+
+void ABuilding::SetArrowComponentPosition(const FVector& newPos)
+{
+	_rallyPoint->SetWorldLocation(FVector(newPos.X, newPos.Y, _rallyPoint->GetComponentLocation().Z));
+}
+
+void ABuilding::SetSelected(bool newState)
+{
+	_isSelected = newState;
+	if (_isSelected)
+	{
+		_rallyPoint->SetHiddenInGame(false);
+	}
+	else
+	{
+		_rallyPoint->SetHiddenInGame(true);
+	}
 }
 
 void ABuilding::SetPlayerOwner(APlayerPawn* APlayerOwner)

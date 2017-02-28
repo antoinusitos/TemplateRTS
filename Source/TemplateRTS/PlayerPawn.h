@@ -88,6 +88,7 @@ private:
 
 	TArray<AAIBase*> _selection;
 	UBoxComponent* _currentSelectionBox;
+	ABuilding* _selectedBuilding;
 
 	EAgesEnum _currentAge;
 

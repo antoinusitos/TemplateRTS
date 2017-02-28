@@ -179,6 +179,8 @@ void APlayerPawn::ActionOne()
 					if (building)
 					{
 						ClearSelectedUnit();
+						_selectedBuilding = building;
+						_selectedBuilding->SetSelected(true);
 						if (building->GetBuildingState() == EBuildingStateEnum::Placed)
 							SetHUDByBuildingType(building, building->GetBuildingType());
 						else
@@ -251,10 +253,27 @@ void APlayerPawn::FinishActionOne()
 		}
 		else
 		{
-			auto aipeasant = Cast<AAIPeasant>(temp[0]);
-			if (aipeasant)
+			bool different = false;
+			for (auto i = 0; i < _selection.Num(); i++)
 			{
-				SetHUDByUnitType(EUnitTypeEnum::Peasant);
+				if (_selection[i]->GetUnitType() != _selection[0]->GetUnitType())
+				{
+					different = true;
+					break;
+				}
+			}
+
+			if (!different)
+			{
+				auto aipeasant = Cast<AAIPeasant>(temp[0]);
+				if (aipeasant)
+				{
+					SetHUDByUnitType(EUnitTypeEnum::Peasant);
+				}
+			}
+			else
+			{
+				SetHUDByUnitType(EUnitTypeEnum::None);
 			}
 		}
 	}
@@ -296,14 +315,35 @@ void APlayerPawn::ActionTwo()
 			{
 				if (HitInfo.GetActor())
 				{
+					UE_LOG(LogTemp, Warning, TEXT("hit !"));
 					if (_selection.Num() > 0)
 					{
+						UE_LOG(LogTemp, Warning, TEXT("selection !"));
 						for (auto i = 0; i < _selection.Num(); i++)
 						{
 							_selection[i]->MoveUnit(HitInfo.Location);
 						}
 					}
+					else if (_selectedBuilding)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Set Pos"));
+						_selectedBuilding->SetArrowComponentPosition(HitInfo.Location);
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("no building"));
+						FString s = _selectedBuilding ? "true" : "false";
+						UE_LOG(LogTemp, Warning, TEXT("is selected ? %s"), *s);
+					}
 				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("no hit"));
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("no linetrace"));
 			}
 		}
 		else if (_playerState == EPlayerStateEnum::Placing)
@@ -322,6 +362,12 @@ void APlayerPawn::ClearSelectedUnit()
 		_selection[i]->SetSelected(false);
 	}
 	_selection.Empty();
+
+	if (_selectedBuilding)
+	{
+		_selectedBuilding->SetSelected(false);
+		_selectedBuilding = nullptr;
+	}
 }
 
 void APlayerPawn::MakeSquareSelection(const FVector& currentPos)

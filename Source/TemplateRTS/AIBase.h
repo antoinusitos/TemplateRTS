@@ -25,6 +25,7 @@ public:
 
 	ABaseAIController* GetController();
 
+	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	void MoveUnit(const FVector& location);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TemplateRTS")

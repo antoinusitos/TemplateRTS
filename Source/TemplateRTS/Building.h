@@ -55,6 +55,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TemplateRTS")
 	void SetPeasantConstructor(AAIPeasant* theConstructor);
 
+	void SetArrowComponentPosition(const FVector& newPos);
+
+	void SetSelected(bool newState);
+
 protected:
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
@@ -67,10 +71,14 @@ protected:
 	UArrowComponent* _arrowComponent;
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
+	UArrowComponent* _rallyPoint;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
 	USphereComponent* _detectionSphere;
 
 	APlayerPawn* _playerOwner;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	int _teamNumber;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
@@ -105,6 +113,8 @@ protected:
 	AAIPeasant* _constructor;
 
 private:
+
+	bool _isSelected;
 
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
