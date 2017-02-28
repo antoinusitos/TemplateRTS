@@ -166,7 +166,7 @@ void APlayerPawn::ActionOne()
 					_lastMousePos = HitInfo.ImpactPoint;
 
 					auto ai = Cast<AAIBase>(HitInfo.GetActor());
-					if (ai)
+					if (ai && ai->GetTeamNumber() == _teamNumber && ai->GetCanMove())
 					{
 						ClearSelectedUnit();
 						_selection.Add(ai);
@@ -315,35 +315,31 @@ void APlayerPawn::ActionTwo()
 			{
 				if (HitInfo.GetActor())
 				{
-					UE_LOG(LogTemp, Warning, TEXT("hit !"));
 					if (_selection.Num() > 0)
 					{
-						UE_LOG(LogTemp, Warning, TEXT("selection !"));
-						for (auto i = 0; i < _selection.Num(); i++)
+						AAIBase* enemy = Cast<AAIBase>(HitInfo.GetActor());
+						if (enemy && enemy->GetTeamNumber() != _teamNumber)
 						{
-							_selection[i]->MoveUnit(HitInfo.Location);
+							for (auto i = 0; i < _selection.Num(); i++)
+							{
+								if(_selection[i]->GetUnitCanAttack())
+									_selection[i]->SetNewTarget(enemy);
+							}
+						}
+						else
+						{
+							for (auto i = 0; i < _selection.Num(); i++)
+							{
+								_selection[i]->SetNewTarget(nullptr);
+								_selection[i]->MoveUnit(HitInfo.Location);
+							}
 						}
 					}
 					else if (_selectedBuilding)
 					{
-						UE_LOG(LogTemp, Warning, TEXT("Set Pos"));
 						_selectedBuilding->SetArrowComponentPosition(HitInfo.Location);
 					}
-					else
-					{
-						UE_LOG(LogTemp, Warning, TEXT("no building"));
-						FString s = _selectedBuilding ? "true" : "false";
-						UE_LOG(LogTemp, Warning, TEXT("is selected ? %s"), *s);
-					}
 				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("no hit"));
-				}
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("no linetrace"));
 			}
 		}
 		else if (_playerState == EPlayerStateEnum::Placing)

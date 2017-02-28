@@ -14,12 +14,27 @@ AAIBase::AAIBase()
 	_selectionFeedback = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Selection Feedback"));
 	_selectionFeedback->SetupAttachment(GetCapsuleComponent());
 
+	_detection = CreateDefaultSubobject<USphereComponent>(TEXT("detection"));
+	_detection->SetupAttachment(GetCapsuleComponent());
+	_detection->OnComponentBeginOverlap.AddDynamic(this, &AAIBase::OnBeginOverlap);
+
 	_unitType = EUnitTypeEnum::None;
 	_teamNumber = -1;
 	_cost = 50;
 	_currentTimeToConstruct = 0.0f;
 	_timeToConstruct = 2.0f;
 	_canMove = true;
+	_canAttack = true;
+	_life = 100;
+	_attack = 20;
+	_cooldownAttack = 3.0f;
+	_currentCooldown = 0.0f;
+	_target = nullptr;
+	_rangeAttack = 100.0f;
+	_unitCanAttack = false;
+
+	_detection->SetSphereRadius(600.0f);	
+
 }
 
 // Called when the game starts or when spawned
@@ -32,6 +47,47 @@ void AAIBase::BeginPlay()
 	{
 		_theController = GetWorld()->SpawnActor<ABaseAIController>(controllerToSpawn, FVector::ZeroVector, FRotator::ZeroRotator);
 		_theController->Possess(this);
+	}
+}
+
+void AAIBase::Tick(float DeltaSeconds)
+{
+	float distToTarget = 99999;
+	if (_target)
+	{
+		distToTarget = FVector::Dist(GetActorLocation(), _target->GetActorLocation());
+	}
+
+	if (_canAttack)
+	{
+		if (distToTarget <= _rangeAttack)
+		{
+			MoveUnit(GetActorLocation());
+			_canAttack = false;
+			_target->ReceiveHit(_attack);
+		}
+		else if (_target && distToTarget > _rangeAttack)
+		{
+			MoveUnit(_target->GetActorLocation());
+		}
+	}
+	else
+	{
+		_currentCooldown += DeltaSeconds;
+		if (_currentCooldown >= _cooldownAttack)
+		{
+			_currentCooldown = 0.0f;
+			_canAttack = true;
+		}
+
+		if (_target && distToTarget > _rangeAttack)
+		{
+			MoveUnit(_target->GetActorLocation());
+		}
+		else if (_target && distToTarget <= _rangeAttack)
+		{
+			MoveUnit(GetActorLocation());
+		}
 	}
 }
 
@@ -90,4 +146,37 @@ void AAIBase::OutOfBuilding()
 bool AAIBase::GetCanMove()
 {
 	return _canMove;
+}
+
+bool AAIBase::ReceiveHit(int amount)
+{
+	_life -= amount;
+	if (_life <= 0)
+	{
+		Destroy();
+		return true;
+	}
+	return false;
+}
+
+void AAIBase::SetNewTarget(AAIBase* theTarget)
+{
+	_target = theTarget;
+}
+
+bool AAIBase::GetUnitCanAttack()
+{
+	return _unitCanAttack;
+}
+
+void AAIBase::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (_unitCanAttack)
+	{
+		AAIBase* enemy = Cast<AAIBase>(OtherActor);
+		if (enemy && enemy->GetTeamNumber() != _teamNumber && _target == nullptr)
+		{
+			_target = enemy;
+		}
+	}
 }

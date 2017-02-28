@@ -112,6 +112,12 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
 	AAIPeasant* _constructor;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	bool _SpawnerOfUnit;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	int _life;
+
 private:
 
 	bool _isSelected;

@@ -35,6 +35,8 @@ ABuilding::ABuilding()
 	_currentTimeToConstruct = 0.0f;
 	_canSpawn = true;
 	_isSelected = false;
+	_life = 100;
+	_SpawnerOfUnit = false;
 
 	_staticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
@@ -98,7 +100,7 @@ void ABuilding::SetArrowComponentPosition(const FVector& newPos)
 void ABuilding::SetSelected(bool newState)
 {
 	_isSelected = newState;
-	if (_isSelected)
+	if (_isSelected && _SpawnerOfUnit)
 	{
 		_rallyPoint->SetHiddenInGame(false);
 	}
