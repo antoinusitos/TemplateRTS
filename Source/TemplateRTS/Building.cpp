@@ -4,6 +4,7 @@
 #include "Building.h"
 #include "PlayerPawn.h"
 #include "AIPeasant.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ABuilding::ABuilding()
@@ -28,6 +29,9 @@ ABuilding::ABuilding()
 
 	_detectionSphere->OnComponentBeginOverlap.AddDynamic(this, &ABuilding::OnBeginOverlap);
 
+	_ProgressBar = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Progress Bar"));
+	_ProgressBar->SetupAttachment(_sceneComponent);
+
 	_cost = 100;
 	_buildingState = EBuildingStateEnum::None;
 	_buildingType = EBuildingEnum::None;
@@ -46,8 +50,17 @@ void ABuilding::Tick(float DeltaSeconds)
 	if (_buildingState == EBuildingStateEnum::Building)
 	{
 		_currentTimeToConstruct += DeltaSeconds;
+		if (_isSelected)
+		{
+			float diff = (_currentTimeToConstruct / _timeToConstruct) * 100;
+			FString s = FString::FromInt(FMath::FloorToInt(diff)) + "%";
+			_ProgressBar->SetText(FText::FromString(s));
+			
+		}
+
 		if (_currentTimeToConstruct >= _timeToConstruct)
 		{
+			_ProgressBar->SetHiddenInGame(true);
 			SetPlacedMaterial();
 			if (_constructor)
 			{
@@ -100,6 +113,11 @@ void ABuilding::SetArrowComponentPosition(const FVector& newPos)
 void ABuilding::SetSelected(bool newState)
 {
 	_isSelected = newState;
+	if (_isSelected && _buildingState == EBuildingStateEnum::Building)
+	{
+		_ProgressBar->SetHiddenInGame(false);
+	}
+
 	if (_isSelected && _SpawnerOfUnit)
 	{
 		_rallyPoint->SetHiddenInGame(false);
@@ -107,6 +125,7 @@ void ABuilding::SetSelected(bool newState)
 	else
 	{
 		_rallyPoint->SetHiddenInGame(true);
+		_ProgressBar->SetHiddenInGame(true);
 	}
 }
 

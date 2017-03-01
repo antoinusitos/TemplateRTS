@@ -76,6 +76,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
 	USphereComponent* _detectionSphere;
 
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "TemplateRTS")
+	UTextRenderComponent* _ProgressBar;
+
 	APlayerPawn* _playerOwner;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
