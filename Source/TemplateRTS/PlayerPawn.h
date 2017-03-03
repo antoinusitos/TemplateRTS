@@ -67,6 +67,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "TemplateRTS")
 	int _goldPossessed;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TemplateRTS")
+	UBoxComponent* _currentSelectionBox;
+
 private:
 
 	void ActionOne();
@@ -87,7 +90,6 @@ private:
 	APlayerController* _playerController;
 
 	TArray<AAIBase*> _selection;
-	UBoxComponent* _currentSelectionBox;
 	ABuilding* _selectedBuilding;
 
 	EAgesEnum _currentAge;

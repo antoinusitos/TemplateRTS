@@ -25,7 +25,8 @@ AAIBase::AAIBase()
 	_timeToConstruct = 2.0f;
 	_canMove = true;
 	_canAttack = true;
-	_life = 100;
+	_maxLife = 100;
+	_life = _maxLife;
 	_attack = 20;
 	_cooldownAttack = 3.0f;
 	_currentCooldown = 0.0f;
@@ -52,6 +53,8 @@ void AAIBase::BeginPlay()
 
 void AAIBase::Tick(float DeltaSeconds)
 {
+	Super::Tick(DeltaSeconds);
+
 	float distToTarget = 99999;
 	if (_target)
 	{

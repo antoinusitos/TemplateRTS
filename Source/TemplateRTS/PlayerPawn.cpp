@@ -173,6 +173,7 @@ void APlayerPawn::ActionOne()
 						ai->SetSelected(true);
 						SetHUDByUnitType(ai->GetUnitType());
 						_hasHittedSomething = true;
+						_executingActionOne = false;
 					}
 
 					auto building = Cast<ABuilding>(HitInfo.GetActor());
@@ -186,6 +187,7 @@ void APlayerPawn::ActionOne()
 						else
 							SetHUDByBuildingType(nullptr, EBuildingEnum::None);
 						_hasHittedSomething = true;
+						_executingActionOne = false;
 					}
 				}
 			}
